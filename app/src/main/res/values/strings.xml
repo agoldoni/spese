@@ -3,4 +3,54 @@
     <string name="app_name">Spese</string>
     <string name="action_info">Info</string>
     <string name="info_version_format">Versione %1$s</string>
+
+    <!-- Tipi bolletta -->
+    <string name="tipo_luce">Luce</string>
+    <string name="tipo_gas">Gas</string>
+    <string name="tipo_rifiuti">Rifiuti</string>
+    <string name="tipo_acqua">Acqua</string>
+    <string-array name="tipi_bolletta">
+        <item>Luce</item>
+        <item>Gas</item>
+        <item>Rifiuti</item>
+        <item>Acqua</item>
+    </string-array>
+
+    <!-- Form bolletta -->
+    <string name="aggiungi_bolletta">Aggiungi bolletta</string>
+    <string name="modifica_bolletta">Modifica bolletta</string>
+    <string name="label_tipo">Tipo</string>
+    <string name="label_importo">Importo (€)</string>
+    <string name="label_mese">Mese</string>
+    <string name="label_anno">Anno</string>
+    <string name="btn_salva">Salva</string>
+    <string name="errore_importo">Inserisci un importo valido</string>
+    <string name="errore_importo_zero">L\'importo deve essere maggiore di zero</string>
+
+    <!-- Lista bollette -->
+    <string name="lista_vuota">Nessuna bolletta registrata.\nTocca + per aggiungerne una.</string>
+    <string name="formato_importo">€ %1$s</string>
+    <string name="formato_periodo">%1$s %2$d</string>
+
+    <!-- Eliminazione -->
+    <string name="conferma_eliminazione">Conferma eliminazione</string>
+    <string name="messaggio_eliminazione">Vuoi eliminare questa bolletta?</string>
+    <string name="btn_elimina">Elimina</string>
+    <string name="btn_annulla">Annulla</string>
+
+    <!-- Mesi -->
+    <string-array name="mesi">
+        <item>Gennaio</item>
+        <item>Febbraio</item>
+        <item>Marzo</item>
+        <item>Aprile</item>
+        <item>Maggio</item>
+        <item>Giugno</item>
+        <item>Luglio</item>
+        <item>Agosto</item>
+        <item>Settembre</item>
+        <item>Ottobre</item>
+        <item>Novembre</item>
+        <item>Dicembre</item>
+    </string-array>
 </resources>

@@ -2,6 +2,8 @@ plugins {
     id 'com.android.application'
 }
 
+def room_version = "2.6.1"
+
 android {
     namespace 'com.spese'
     compileSdk 34
@@ -33,4 +35,6 @@ android {
 
 dependencies {
     implementation 'com.google.android.material:material:1.11.0'
+    implementation "androidx.room:room-runtime:$room_version"
+    annotationProcessor "androidx.room:room-compiler:$room_version"
 }
