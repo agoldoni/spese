@@ -47,6 +47,10 @@ Single-module Gradle project (`app/`). All source code lives under `app/src/main
 
 The project uses Italian for all user-facing strings, documentation, comments, and commit messages.
 
+## Data Model
+
+Tutte le entità del database devono usare **UUID** (`TEXT PRIMARY KEY`) come chiave primaria, generato con `java.util.UUID.randomUUID().toString()`. Non usare mai `INTEGER PRIMARY KEY AUTOINCREMENT`. Questo per predisporre l'app a una futura condivisione/sincronizzazione dati tra istanze diverse.
+
 ## Implementation Plans
 
 Feature plans are stored in `docs/features/<feature-name>/implementation-plan.md`.

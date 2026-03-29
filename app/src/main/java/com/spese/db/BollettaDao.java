@@ -12,7 +12,7 @@ import java.util.List;
 public interface BollettaDao {
 
     @Insert
-    long insert(Bolletta bolletta);
+    void insert(Bolletta bolletta);
 
     @Update
     void update(Bolletta bolletta);
@@ -20,6 +20,6 @@ public interface BollettaDao {
     @Delete
     void delete(Bolletta bolletta);
 
-    @Query("SELECT * FROM bollette ORDER BY creatoIl DESC")
+    @Query("SELECT * FROM bollette ORDER BY createdAt DESC")
     List<Bolletta> getAll();
 }

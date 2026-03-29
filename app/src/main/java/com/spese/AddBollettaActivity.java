@@ -14,29 +14,34 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.spese.db.AppDatabase;
 import com.spese.db.Bolletta;
 import com.spese.db.BollettaDao;
+import com.spese.db.PurchaseType;
+import com.spese.db.PurchaseTypeDao;
 
 import java.util.Calendar;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class AddBollettaActivity extends AppCompatActivity {
 
     public static final String EXTRA_BOLLETTA_ID = "bolletta_id";
-    public static final String EXTRA_BOLLETTA_TIPO = "bolletta_tipo";
-    public static final String EXTRA_BOLLETTA_IMPORTO = "bolletta_importo";
-    public static final String EXTRA_BOLLETTA_MESE = "bolletta_mese";
-    public static final String EXTRA_BOLLETTA_ANNO = "bolletta_anno";
+    public static final String EXTRA_BOLLETTA_PURCHASE_TYPE_ID = "bolletta_purchase_type_id";
+    public static final String EXTRA_BOLLETTA_AMOUNT = "bolletta_amount";
+    public static final String EXTRA_BOLLETTA_MONTH = "bolletta_month";
+    public static final String EXTRA_BOLLETTA_YEAR = "bolletta_year";
 
-    private AutoCompleteTextView spinnerTipo;
-    private TextInputEditText editImporto;
-    private AutoCompleteTextView spinnerMese;
-    private TextInputEditText editAnno;
-    private TextInputLayout layoutImporto;
+    private AutoCompleteTextView spinnerType;
+    private TextInputEditText editAmount;
+    private AutoCompleteTextView spinnerMonth;
+    private TextInputEditText editYear;
+    private TextInputLayout layoutAmount;
 
-    private BollettaDao dao;
+    private BollettaDao bollettaDao;
+    private PurchaseTypeDao purchaseTypeDao;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    private long editId = -1;
+    private List<PurchaseType> purchaseTypes;
+    private String editId = null;
     private boolean isEdit = false;
 
     @Override
@@ -44,106 +49,138 @@ public class AddBollettaActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_bolletta);
 
-        dao = AppDatabase.getInstance(this).bollettaDao();
+        AppDatabase db = AppDatabase.getInstance(this);
+        bollettaDao = db.bollettaDao();
+        purchaseTypeDao = db.purchaseTypeDao();
 
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setNavigationOnClickListener(v -> finish());
 
-        spinnerTipo = findViewById(R.id.spinner_tipo);
-        editImporto = findViewById(R.id.edit_importo);
-        spinnerMese = findViewById(R.id.spinner_mese);
-        editAnno = findViewById(R.id.edit_anno);
-        layoutImporto = findViewById(R.id.layout_importo);
-        MaterialButton btnSalva = findViewById(R.id.btn_salva);
+        spinnerType = findViewById(R.id.spinner_tipo);
+        editAmount = findViewById(R.id.edit_importo);
+        spinnerMonth = findViewById(R.id.spinner_mese);
+        editYear = findViewById(R.id.edit_anno);
+        layoutAmount = findViewById(R.id.layout_importo);
+        MaterialButton btnSave = findViewById(R.id.btn_salva);
 
-        setupTipoSpinner();
-        setupMeseSpinner();
+        setupMonthSpinner();
 
         Intent intent = getIntent();
         if (intent.hasExtra(EXTRA_BOLLETTA_ID)) {
             isEdit = true;
-            editId = intent.getLongExtra(EXTRA_BOLLETTA_ID, -1);
+            editId = intent.getStringExtra(EXTRA_BOLLETTA_ID);
             toolbar.setTitle(R.string.modifica_bolletta);
 
-            spinnerTipo.setText(intent.getStringExtra(EXTRA_BOLLETTA_TIPO), false);
-            editImporto.setText(String.valueOf(intent.getDoubleExtra(EXTRA_BOLLETTA_IMPORTO, 0)));
+            editAmount.setText(String.valueOf(intent.getDoubleExtra(EXTRA_BOLLETTA_AMOUNT, 0)));
 
-            int mese = intent.getIntExtra(EXTRA_BOLLETTA_MESE, 1);
-            String[] mesi = getResources().getStringArray(R.array.mesi);
-            if (mese >= 1 && mese <= 12) {
-                spinnerMese.setText(mesi[mese - 1], false);
+            int month = intent.getIntExtra(EXTRA_BOLLETTA_MONTH, 1);
+            String[] months = getResources().getStringArray(R.array.mesi);
+            if (month >= 1 && month <= 12) {
+                spinnerMonth.setText(months[month - 1], false);
             }
-            editAnno.setText(String.valueOf(intent.getIntExtra(EXTRA_BOLLETTA_ANNO, Calendar.getInstance().get(Calendar.YEAR))));
+            editYear.setText(String.valueOf(intent.getIntExtra(EXTRA_BOLLETTA_YEAR, Calendar.getInstance().get(Calendar.YEAR))));
         } else {
             Calendar cal = Calendar.getInstance();
-            String[] mesi = getResources().getStringArray(R.array.mesi);
-            spinnerMese.setText(mesi[cal.get(Calendar.MONTH)], false);
-            editAnno.setText(String.valueOf(cal.get(Calendar.YEAR)));
+            String[] months = getResources().getStringArray(R.array.mesi);
+            spinnerMonth.setText(months[cal.get(Calendar.MONTH)], false);
+            editYear.setText(String.valueOf(cal.get(Calendar.YEAR)));
         }
 
-        btnSalva.setOnClickListener(v -> salva());
+        loadPurchaseTypes(intent);
+
+        btnSave.setOnClickListener(v -> save());
     }
 
-    private void setupTipoSpinner() {
-        String[] tipi = getResources().getStringArray(R.array.tipi_bolletta);
+    private void loadPurchaseTypes(Intent intent) {
+        executor.execute(() -> {
+            purchaseTypes = purchaseTypeDao.getAll();
+            String[] names = new String[purchaseTypes.size()];
+            for (int i = 0; i < purchaseTypes.size(); i++) {
+                names[i] = purchaseTypes.get(i).getName();
+            }
+            runOnUiThread(() -> {
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                        android.R.layout.simple_dropdown_item_1line, names);
+                spinnerType.setAdapter(adapter);
+
+                if (isEdit && intent.hasExtra(EXTRA_BOLLETTA_PURCHASE_TYPE_ID)) {
+                    String purchaseTypeId = intent.getStringExtra(EXTRA_BOLLETTA_PURCHASE_TYPE_ID);
+                    for (PurchaseType pt : purchaseTypes) {
+                        if (pt.getId().equals(purchaseTypeId)) {
+                            spinnerType.setText(pt.getName(), false);
+                            break;
+                        }
+                    }
+                } else if (!purchaseTypes.isEmpty()) {
+                    spinnerType.setText(names[0], false);
+                }
+            });
+        });
+    }
+
+    private void setupMonthSpinner() {
+        String[] months = getResources().getStringArray(R.array.mesi);
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_dropdown_item_1line, tipi);
-        spinnerTipo.setAdapter(adapter);
-        spinnerTipo.setText(tipi[0], false);
+                android.R.layout.simple_dropdown_item_1line, months);
+        spinnerMonth.setAdapter(adapter);
     }
 
-    private void setupMeseSpinner() {
-        String[] mesi = getResources().getStringArray(R.array.mesi);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_dropdown_item_1line, mesi);
-        spinnerMese.setAdapter(adapter);
-    }
+    private void save() {
+        String amountStr = editAmount.getText() != null ? editAmount.getText().toString().trim() : "";
+        String yearStr = editYear.getText() != null ? editYear.getText().toString().trim() : "";
 
-    private void salva() {
-        String importoStr = editImporto.getText() != null ? editImporto.getText().toString().trim() : "";
-        String annoStr = editAnno.getText() != null ? editAnno.getText().toString().trim() : "";
-
-        double importo;
+        double amount;
         try {
-            importo = Double.parseDouble(importoStr.replace(",", "."));
+            amount = Double.parseDouble(amountStr.replace(",", "."));
         } catch (NumberFormatException e) {
-            layoutImporto.setError(getString(R.string.errore_importo));
+            layoutAmount.setError(getString(R.string.errore_importo));
             return;
         }
 
-        if (importo <= 0) {
-            layoutImporto.setError(getString(R.string.errore_importo_zero));
+        if (amount <= 0) {
+            layoutAmount.setError(getString(R.string.errore_importo_zero));
             return;
         }
 
-        layoutImporto.setError(null);
+        layoutAmount.setError(null);
 
-        importo = Math.round(importo * 100.0) / 100.0;
+        amount = Math.round(amount * 100.0) / 100.0;
 
-        String tipo = spinnerTipo.getText().toString();
-        int mese = getMeseSelezionato();
-        int anno;
+        String selectedTypeName = spinnerType.getText().toString();
+        String purchaseTypeId = null;
+        if (purchaseTypes != null) {
+            for (PurchaseType pt : purchaseTypes) {
+                if (pt.getName().equals(selectedTypeName)) {
+                    purchaseTypeId = pt.getId();
+                    break;
+                }
+            }
+        }
+        if (purchaseTypeId == null) return;
+
+        int month = getSelectedMonth();
+        int year;
         try {
-            anno = Integer.parseInt(annoStr);
+            year = Integer.parseInt(yearStr);
         } catch (NumberFormatException e) {
-            anno = Calendar.getInstance().get(Calendar.YEAR);
+            year = Calendar.getInstance().get(Calendar.YEAR);
         }
 
         if (isEdit) {
-            Bolletta bolletta = new Bolletta(tipo, importo, mese, anno);
+            Bolletta bolletta = new Bolletta(purchaseTypeId, amount, month, year);
             bolletta.setId(editId);
             executor.execute(() -> {
-                dao.update(bolletta);
+                bollettaDao.update(bolletta);
                 runOnUiThread(() -> {
                     setResult(RESULT_OK);
                     finish();
                 });
             });
         } else {
-            Bolletta bolletta = new Bolletta(tipo, importo, mese, anno);
+            Bolletta bolletta = new Bolletta(purchaseTypeId, amount, month, year);
             executor.execute(() -> {
-                dao.insert(bolletta);
+                bollettaDao.insert(bolletta);
                 runOnUiThread(() -> {
                     setResult(RESULT_OK);
                     finish();
@@ -152,11 +189,11 @@ public class AddBollettaActivity extends AppCompatActivity {
         }
     }
 
-    private int getMeseSelezionato() {
-        String meseText = spinnerMese.getText().toString();
-        String[] mesi = getResources().getStringArray(R.array.mesi);
-        for (int i = 0; i < mesi.length; i++) {
-            if (mesi[i].equals(meseText)) return i + 1;
+    private int getSelectedMonth() {
+        String monthText = spinnerMonth.getText().toString();
+        String[] months = getResources().getStringArray(R.array.mesi);
+        for (int i = 0; i < months.length; i++) {
+            if (months[i].equals(monthText)) return i + 1;
         }
         return Calendar.getInstance().get(Calendar.MONTH) + 1;
     }

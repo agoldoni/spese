@@ -2,19 +2,8 @@
 <resources>
     <string name="app_name">Spese</string>
     <string name="action_info">Info</string>
+    <string name="action_purchase_types">Tipologie</string>
     <string name="info_version_format">Versione %1$s</string>
-
-    <!-- Tipi bolletta -->
-    <string name="tipo_luce">Luce</string>
-    <string name="tipo_gas">Gas</string>
-    <string name="tipo_rifiuti">Rifiuti</string>
-    <string name="tipo_acqua">Acqua</string>
-    <string-array name="tipi_bolletta">
-        <item>Luce</item>
-        <item>Gas</item>
-        <item>Rifiuti</item>
-        <item>Acqua</item>
-    </string-array>
 
     <!-- Form bolletta -->
     <string name="aggiungi_bolletta">Aggiungi bolletta</string>
@@ -37,6 +26,18 @@
     <string name="messaggio_eliminazione">Vuoi eliminare questa bolletta?</string>
     <string name="btn_elimina">Elimina</string>
     <string name="btn_annulla">Annulla</string>
+
+    <!-- Tipologie -->
+    <string name="gestione_tipologie">Tipologie</string>
+    <string name="aggiungi_tipologia">Aggiungi tipologia</string>
+    <string name="modifica_tipologia">Modifica tipologia</string>
+    <string name="label_nome_tipologia">Nome</string>
+    <string name="label_descrizione_tipologia">Descrizione (opzionale)</string>
+    <string name="lista_tipologie_vuota">Nessuna tipologia registrata.\nTocca + per aggiungerne una.</string>
+    <string name="messaggio_eliminazione_tipologia">Vuoi eliminare questa tipologia?</string>
+    <string name="errore">Errore</string>
+    <string name="errore_nome_duplicato">Esiste già una tipologia con questo nome.</string>
+    <string name="errore_tipologia_in_uso">Questa tipologia è usata da %1$d bollette e non può essere eliminata.</string>
 
     <!-- Mesi -->
     <string-array name="mesi">

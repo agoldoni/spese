@@ -1,43 +1,60 @@
 package com.spese.db;
 
+import androidx.annotation.NonNull;
 import androidx.room.Entity;
+import androidx.room.ForeignKey;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "bollette")
+import java.util.UUID;
+
+@Entity(tableName = "bollette",
+        foreignKeys = @ForeignKey(
+                entity = PurchaseType.class,
+                parentColumns = "id",
+                childColumns = "purchaseTypeId",
+                onDelete = ForeignKey.RESTRICT),
+        indices = {@Index("purchaseTypeId")})
 public class Bolletta {
 
-    @PrimaryKey(autoGenerate = true)
-    private long id;
+    @PrimaryKey
+    @NonNull
+    private String id;
 
-    private String tipo;
-    private double importo;
-    private int mese;
-    private int anno;
-    private long creatoIl;
+    @NonNull
+    private String purchaseTypeId;
 
-    public Bolletta(String tipo, double importo, int mese, int anno) {
-        this.tipo = tipo;
-        this.importo = importo;
-        this.mese = mese;
-        this.anno = anno;
-        this.creatoIl = System.currentTimeMillis();
+    private double amount;
+    private int month;
+    private int year;
+    private long createdAt;
+
+    public Bolletta(@NonNull String purchaseTypeId, double amount, int month, int year) {
+        this.id = UUID.randomUUID().toString();
+        this.purchaseTypeId = purchaseTypeId;
+        this.amount = amount;
+        this.month = month;
+        this.year = year;
+        this.createdAt = System.currentTimeMillis();
     }
 
-    public long getId() { return id; }
-    public void setId(long id) { this.id = id; }
+    @NonNull
+    public String getId() { return id; }
+    public void setId(@NonNull String id) { this.id = id; }
 
-    public String getTipo() { return tipo; }
-    public void setTipo(String tipo) { this.tipo = tipo; }
+    @NonNull
+    public String getPurchaseTypeId() { return purchaseTypeId; }
+    public void setPurchaseTypeId(@NonNull String purchaseTypeId) { this.purchaseTypeId = purchaseTypeId; }
 
-    public double getImporto() { return importo; }
-    public void setImporto(double importo) { this.importo = importo; }
+    public double getAmount() { return amount; }
+    public void setAmount(double amount) { this.amount = amount; }
 
-    public int getMese() { return mese; }
-    public void setMese(int mese) { this.mese = mese; }
+    public int getMonth() { return month; }
+    public void setMonth(int month) { this.month = month; }
 
-    public int getAnno() { return anno; }
-    public void setAnno(int anno) { this.anno = anno; }
+    public int getYear() { return year; }
+    public void setYear(int year) { this.year = year; }
 
-    public long getCreatoIl() { return creatoIl; }
-    public void setCreatoIl(long creatoIl) { this.creatoIl = creatoIl; }
+    public long getCreatedAt() { return createdAt; }
+    public void setCreatedAt(long createdAt) { this.createdAt = createdAt; }
 }

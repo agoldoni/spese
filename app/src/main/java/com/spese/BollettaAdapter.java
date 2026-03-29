@@ -9,12 +9,15 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.spese.db.Bolletta;
+import com.spese.db.PurchaseType;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class BollettaAdapter extends RecyclerView.Adapter<BollettaAdapter.ViewHolder> {
 
@@ -27,15 +30,23 @@ public class BollettaAdapter extends RecyclerView.Adapter<BollettaAdapter.ViewHo
     }
 
     private final List<Bolletta> bollette = new ArrayList<>();
-    private final String[] mesi;
-    private final DecimalFormat formatoEuro;
+    private final String[] months;
+    private final DecimalFormat euroFormat;
+    private final Map<String, String> purchaseTypeNames = new HashMap<>();
     private OnItemClickListener clickListener;
     private OnItemLongClickListener longClickListener;
 
-    public BollettaAdapter(String[] mesi) {
-        this.mesi = mesi;
+    public BollettaAdapter(String[] months) {
+        this.months = months;
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.ITALY);
-        this.formatoEuro = new DecimalFormat("#,##0.00", symbols);
+        this.euroFormat = new DecimalFormat("#,##0.00", symbols);
+    }
+
+    public void setPurchaseTypes(List<PurchaseType> types) {
+        purchaseTypeNames.clear();
+        for (PurchaseType pt : types) {
+            purchaseTypeNames.put(pt.getId(), pt.getName());
+        }
     }
 
     public void setOnItemClickListener(OnItemClickListener listener) {
@@ -46,9 +57,9 @@ public class BollettaAdapter extends RecyclerView.Adapter<BollettaAdapter.ViewHo
         this.longClickListener = listener;
     }
 
-    public void setBollette(List<Bolletta> nuovaBollette) {
+    public void setBollette(List<Bolletta> items) {
         bollette.clear();
-        bollette.addAll(nuovaBollette);
+        bollette.addAll(items);
         notifyDataSetChanged();
     }
 
@@ -73,12 +84,13 @@ public class BollettaAdapter extends RecyclerView.Adapter<BollettaAdapter.ViewHo
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Bolletta b = bollette.get(position);
 
-        holder.textTipo.setText(b.getTipo());
-        holder.textImporto.setText("€ " + formatoEuro.format(b.getImporto()));
+        String typeName = purchaseTypeNames.get(b.getPurchaseTypeId());
+        holder.textType.setText(typeName != null ? typeName : "?");
+        holder.textAmount.setText("€ " + euroFormat.format(b.getAmount()));
 
-        String nomeMese = (b.getMese() >= 1 && b.getMese() <= 12)
-                ? mesi[b.getMese() - 1] : String.valueOf(b.getMese());
-        holder.textPeriodo.setText(nomeMese + " " + b.getAnno());
+        String monthName = (b.getMonth() >= 1 && b.getMonth() <= 12)
+                ? months[b.getMonth() - 1] : String.valueOf(b.getMonth());
+        holder.textPeriod.setText(monthName + " " + b.getYear());
 
         holder.itemView.setOnClickListener(v -> {
             if (clickListener != null) clickListener.onItemClick(b);
@@ -99,15 +111,15 @@ public class BollettaAdapter extends RecyclerView.Adapter<BollettaAdapter.ViewHo
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        final TextView textTipo;
-        final TextView textImporto;
-        final TextView textPeriodo;
+        final TextView textType;
+        final TextView textAmount;
+        final TextView textPeriod;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
-            textTipo = itemView.findViewById(R.id.text_tipo);
-            textImporto = itemView.findViewById(R.id.text_importo);
-            textPeriodo = itemView.findViewById(R.id.text_periodo);
+            textType = itemView.findViewById(R.id.text_tipo);
+            textAmount = itemView.findViewById(R.id.text_importo);
+            textPeriod = itemView.findViewById(R.id.text_periodo);
         }
     }
 }

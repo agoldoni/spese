@@ -19,6 +19,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.spese.db.AppDatabase;
 import com.spese.db.Bolletta;
 import com.spese.db.BollettaDao;
+import com.spese.db.PurchaseType;
+import com.spese.db.PurchaseTypeDao;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -27,14 +29,22 @@ import java.util.concurrent.Executors;
 public class MainActivity extends AppCompatActivity {
 
     private BollettaAdapter adapter;
-    private BollettaDao dao;
-    private TextView textListaVuota;
+    private BollettaDao bollettaDao;
+    private PurchaseTypeDao purchaseTypeDao;
+    private TextView textEmptyList;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     private final ActivityResultLauncher<Intent> addEditLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == RESULT_OK) {
-                    caricaBollette();
+                    loadData();
+                }
+            });
+
+    private final ActivityResultLauncher<Intent> purchaseTypeLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK) {
+                    loadData();
                 }
             });
 
@@ -43,18 +53,20 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        dao = AppDatabase.getInstance(this).bollettaDao();
+        AppDatabase db = AppDatabase.getInstance(this);
+        bollettaDao = db.bollettaDao();
+        purchaseTypeDao = db.purchaseTypeDao();
 
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        textListaVuota = findViewById(R.id.text_lista_vuota);
+        textEmptyList = findViewById(R.id.text_lista_vuota);
 
-        String[] mesi = getResources().getStringArray(R.array.mesi);
-        adapter = new BollettaAdapter(mesi);
+        String[] months = getResources().getStringArray(R.array.mesi);
+        adapter = new BollettaAdapter(months);
 
-        adapter.setOnItemClickListener(this::apriModifica);
-        adapter.setOnItemLongClickListener((bolletta, position) -> mostraDialogoEliminazione(bolletta, position));
+        adapter.setOnItemClickListener(this::openEdit);
+        adapter.setOnItemLongClickListener((bolletta, position) -> showDeleteDialog(bolletta, position));
 
         RecyclerView recycler = findViewById(R.id.recycler_bollette);
         recycler.setLayoutManager(new LinearLayoutManager(this));
@@ -66,40 +78,42 @@ public class MainActivity extends AppCompatActivity {
             addEditLauncher.launch(intent);
         });
 
-        caricaBollette();
+        loadData();
     }
 
-    private void caricaBollette() {
+    private void loadData() {
         executor.execute(() -> {
-            List<Bolletta> lista = dao.getAll();
+            List<PurchaseType> types = purchaseTypeDao.getAll();
+            List<Bolletta> bills = bollettaDao.getAll();
             runOnUiThread(() -> {
-                adapter.setBollette(lista);
-                textListaVuota.setVisibility(lista.isEmpty() ? View.VISIBLE : View.GONE);
+                adapter.setPurchaseTypes(types);
+                adapter.setBollette(bills);
+                textEmptyList.setVisibility(bills.isEmpty() ? View.VISIBLE : View.GONE);
             });
         });
     }
 
-    private void apriModifica(Bolletta bolletta) {
+    private void openEdit(Bolletta bolletta) {
         Intent intent = new Intent(this, AddBollettaActivity.class);
         intent.putExtra(AddBollettaActivity.EXTRA_BOLLETTA_ID, bolletta.getId());
-        intent.putExtra(AddBollettaActivity.EXTRA_BOLLETTA_TIPO, bolletta.getTipo());
-        intent.putExtra(AddBollettaActivity.EXTRA_BOLLETTA_IMPORTO, bolletta.getImporto());
-        intent.putExtra(AddBollettaActivity.EXTRA_BOLLETTA_MESE, bolletta.getMese());
-        intent.putExtra(AddBollettaActivity.EXTRA_BOLLETTA_ANNO, bolletta.getAnno());
+        intent.putExtra(AddBollettaActivity.EXTRA_BOLLETTA_PURCHASE_TYPE_ID, bolletta.getPurchaseTypeId());
+        intent.putExtra(AddBollettaActivity.EXTRA_BOLLETTA_AMOUNT, bolletta.getAmount());
+        intent.putExtra(AddBollettaActivity.EXTRA_BOLLETTA_MONTH, bolletta.getMonth());
+        intent.putExtra(AddBollettaActivity.EXTRA_BOLLETTA_YEAR, bolletta.getYear());
         addEditLauncher.launch(intent);
     }
 
-    private void mostraDialogoEliminazione(Bolletta bolletta, int position) {
+    private void showDeleteDialog(Bolletta bolletta, int position) {
         new MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.conferma_eliminazione)
                 .setMessage(R.string.messaggio_eliminazione)
                 .setNegativeButton(R.string.btn_annulla, null)
                 .setPositiveButton(R.string.btn_elimina, (dialog, which) -> {
                     executor.execute(() -> {
-                        dao.delete(bolletta);
+                        bollettaDao.delete(bolletta);
                         runOnUiThread(() -> {
                             adapter.removeItem(position);
-                            textListaVuota.setVisibility(
+                            textEmptyList.setVisibility(
                                     adapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
                         });
                     });
@@ -117,6 +131,11 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_info) {
             startActivity(new Intent(this, InfoActivity.class));
+            return true;
+        }
+        if (item.getItemId() == R.id.action_purchase_types) {
+            Intent intent = new Intent(this, PurchaseTypeActivity.class);
+            purchaseTypeLauncher.launch(intent);
             return true;
         }
         return super.onOptionsItemSelected(item);
