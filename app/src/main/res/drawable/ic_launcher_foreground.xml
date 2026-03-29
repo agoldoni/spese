@@ -1,0 +1,58 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <group
+        android:pivotX="54"
+        android:pivotY="54"
+        android:rotation="-45">
+
+        <!-- Banknote body -->
+        <path
+            android:pathData="M24,38 L84,38 Q86,38 86,40 L86,68 Q86,70 84,70 L24,70 Q22,70 22,68 L22,40 Q22,38 24,38 Z"
+            android:fillColor="#FFFFFF"
+            android:strokeColor="#1B5E20"
+            android:strokeWidth="2" />
+
+        <!-- Inner border -->
+        <path
+            android:pathData="M28,42 L80,42 Q81,42 81,43 L81,65 Q81,66 80,66 L28,66 Q27,66 27,65 L27,43 Q27,42 28,42 Z"
+            android:fillColor="@android:color/transparent"
+            android:strokeColor="#2E7D32"
+            android:strokeWidth="1"
+            android:strokeLineCap="round" />
+
+        <!-- Dollar/Euro symbol circle -->
+        <path
+            android:pathData="M54,54 m-8,0 a8,8 0 1,1 16,0 a8,8 0 1,1 -16,0"
+            android:fillColor="#E8F5E9"
+            android:strokeColor="#2E7D32"
+            android:strokeWidth="1.5" />
+
+        <!-- Euro symbol -->
+        <path
+            android:pathData="M57,49 Q53,47 50,50 Q48,53 50,56 Q52,59 57,58 M49,52 L56,52 M49,55 L56,55"
+            android:fillColor="@android:color/transparent"
+            android:strokeColor="#1B5E20"
+            android:strokeWidth="1.8"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+
+        <!-- Corner decorations -->
+        <path
+            android:pathData="M30,45 m-2,0 a2,2 0 1,1 4,0 a2,2 0 1,1 -4,0"
+            android:fillColor="#A5D6A7" />
+        <path
+            android:pathData="M78,45 m-2,0 a2,2 0 1,1 4,0 a2,2 0 1,1 -4,0"
+            android:fillColor="#A5D6A7" />
+        <path
+            android:pathData="M30,63 m-2,0 a2,2 0 1,1 4,0 a2,2 0 1,1 -4,0"
+            android:fillColor="#A5D6A7" />
+        <path
+            android:pathData="M78,63 m-2,0 a2,2 0 1,1 4,0 a2,2 0 1,1 -4,0"
+            android:fillColor="#A5D6A7" />
+
+    </group>
+</vector>

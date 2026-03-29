@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Spese</string>
+    <string name="action_info">Info</string>
+    <string name="info_version_format">Versione %1$s</string>
+</resources>
