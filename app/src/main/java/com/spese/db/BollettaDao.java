@@ -22,4 +22,10 @@ public interface BollettaDao {
 
     @Query("SELECT * FROM bollette ORDER BY createdAt DESC")
     List<Bolletta> getAll();
+
+    @Query("SELECT year, SUM(amount) AS total FROM bollette GROUP BY year ORDER BY year DESC")
+    List<YearlySummary> getTotalByYear();
+
+    @Query("SELECT year, SUM(amount) AS total FROM bollette WHERE purchaseTypeId = :typeId GROUP BY year ORDER BY year DESC")
+    List<YearlySummary> getTotalByYearAndType(String typeId);
 }

@@ -30,6 +30,10 @@
             android:name=".PurchaseTypeActivity"
             android:parentActivityName=".MainActivity" />
 
+        <activity
+            android:name=".SummaryActivity"
+            android:parentActivityName=".MainActivity" />
+
     </application>
 
 </manifest>

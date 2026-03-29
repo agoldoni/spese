@@ -39,6 +39,17 @@
     <string name="errore_nome_duplicato">Esiste già una tipologia con questo nome.</string>
     <string name="errore_tipologia_in_uso">Questa tipologia è usata da %1$d bollette e non può essere eliminata.</string>
 
+    <!-- Riepilogo -->
+    <string name="action_riepilogo">Riepilogo</string>
+    <string name="titolo_riepilogo">Riepilogo</string>
+    <string name="riepilogo_per_anno">Per anno</string>
+    <string name="riepilogo_per_anno_tipologia">Per anno/tipologia</string>
+    <string name="riepilogo_vuoto">Nessun dato disponibile</string>
+    <string-array name="modalita_riepilogo">
+        <item>Per anno</item>
+        <item>Per anno/tipologia</item>
+    </string-array>
+
     <!-- Mesi -->
     <string-array name="mesi">
         <item>Gennaio</item>

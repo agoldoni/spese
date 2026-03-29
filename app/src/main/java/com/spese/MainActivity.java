@@ -138,6 +138,10 @@ public class MainActivity extends AppCompatActivity {
             purchaseTypeLauncher.launch(intent);
             return true;
         }
+        if (item.getItemId() == R.id.action_riepilogo) {
+            startActivity(new Intent(this, SummaryActivity.class));
+            return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 
