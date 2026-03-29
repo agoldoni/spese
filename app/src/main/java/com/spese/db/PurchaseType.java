@@ -18,11 +18,13 @@ public class PurchaseType {
     private String name;
 
     private String description;
+    private long updatedAt;
 
     public PurchaseType(@NonNull String name, String description) {
         this.id = UUID.randomUUID().toString();
         this.name = name;
         this.description = description;
+        this.updatedAt = System.currentTimeMillis();
     }
 
     @NonNull
@@ -35,4 +37,7 @@ public class PurchaseType {
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public long getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(long updatedAt) { this.updatedAt = updatedAt; }
 }

@@ -28,6 +28,7 @@ public class Bolletta {
     private int month;
     private int year;
     private long createdAt;
+    private long updatedAt;
 
     public Bolletta(@NonNull String purchaseTypeId, double amount, int month, int year) {
         this.id = UUID.randomUUID().toString();
@@ -36,6 +37,7 @@ public class Bolletta {
         this.month = month;
         this.year = year;
         this.createdAt = System.currentTimeMillis();
+        this.updatedAt = System.currentTimeMillis();
     }
 
     @NonNull
@@ -57,4 +59,7 @@ public class Bolletta {
 
     public long getCreatedAt() { return createdAt; }
     public void setCreatedAt(long createdAt) { this.createdAt = createdAt; }
+
+    public long getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(long updatedAt) { this.updatedAt = updatedAt; }
 }

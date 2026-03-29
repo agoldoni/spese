@@ -78,7 +78,15 @@ public class MainActivity extends AppCompatActivity {
             addEditLauncher.launch(intent);
         });
 
+        MqttSyncManager.getInstance(this).setOnSyncDataReceivedListener(this::loadData);
+
         loadData();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        MqttSyncManager.getInstance(this).reconnectIfNeeded();
     }
 
     private void loadData() {
@@ -100,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra(AddBollettaActivity.EXTRA_BOLLETTA_AMOUNT, bolletta.getAmount());
         intent.putExtra(AddBollettaActivity.EXTRA_BOLLETTA_MONTH, bolletta.getMonth());
         intent.putExtra(AddBollettaActivity.EXTRA_BOLLETTA_YEAR, bolletta.getYear());
+        intent.putExtra(AddBollettaActivity.EXTRA_BOLLETTA_CREATED_AT, bolletta.getCreatedAt());
         addEditLauncher.launch(intent);
     }
 
@@ -111,6 +120,7 @@ public class MainActivity extends AppCompatActivity {
                 .setPositiveButton(R.string.btn_elimina, (dialog, which) -> {
                     executor.execute(() -> {
                         bollettaDao.delete(bolletta);
+                        MqttSyncManager.getInstance(MainActivity.this).publishDeleteBolletta(bolletta.getId());
                         runOnUiThread(() -> {
                             adapter.removeItem(position);
                             textEmptyList.setVisibility(
@@ -129,6 +139,10 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_condivisione) {
+            startActivity(new Intent(this, MqttConfigActivity.class));
+            return true;
+        }
         if (item.getItemId() == R.id.action_info) {
             startActivity(new Intent(this, InfoActivity.class));
             return true;

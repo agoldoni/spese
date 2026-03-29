@@ -84,6 +84,7 @@ public class PurchaseTypeActivity extends AppCompatActivity {
                     executor.execute(() -> {
                         try {
                             purchaseTypeDao.insert(pt);
+                            MqttSyncManager.getInstance(PurchaseTypeActivity.this).publishPurchaseType(pt);
                             dataChanged = true;
                             runOnUiThread(this::loadData);
                         } catch (Exception e) {
@@ -117,9 +118,11 @@ public class PurchaseTypeActivity extends AppCompatActivity {
 
                     purchaseType.setName(name);
                     purchaseType.setDescription(description.isEmpty() ? null : description);
+                    purchaseType.setUpdatedAt(System.currentTimeMillis());
                     executor.execute(() -> {
                         try {
                             purchaseTypeDao.update(purchaseType);
+                            MqttSyncManager.getInstance(PurchaseTypeActivity.this).publishPurchaseType(purchaseType);
                             dataChanged = true;
                             runOnUiThread(this::loadData);
                         } catch (Exception e) {
@@ -152,6 +155,7 @@ public class PurchaseTypeActivity extends AppCompatActivity {
                             .setPositiveButton(R.string.btn_elimina, (dialog, which) -> {
                                 executor.execute(() -> {
                                     purchaseTypeDao.delete(purchaseType);
+                                    MqttSyncManager.getInstance(PurchaseTypeActivity.this).publishDeletePurchaseType(purchaseType.getId());
                                     dataChanged = true;
                                     runOnUiThread(this::loadData);
                                 });

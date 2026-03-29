@@ -29,6 +29,7 @@ public class AddBollettaActivity extends AppCompatActivity {
     public static final String EXTRA_BOLLETTA_AMOUNT = "bolletta_amount";
     public static final String EXTRA_BOLLETTA_MONTH = "bolletta_month";
     public static final String EXTRA_BOLLETTA_YEAR = "bolletta_year";
+    public static final String EXTRA_BOLLETTA_CREATED_AT = "bolletta_created_at";
 
     private AutoCompleteTextView spinnerType;
     private TextInputEditText editAmount;
@@ -42,6 +43,7 @@ public class AddBollettaActivity extends AppCompatActivity {
 
     private List<PurchaseType> purchaseTypes;
     private String editId = null;
+    private long editCreatedAt = 0;
     private boolean isEdit = false;
 
     @Override
@@ -70,6 +72,7 @@ public class AddBollettaActivity extends AppCompatActivity {
         if (intent.hasExtra(EXTRA_BOLLETTA_ID)) {
             isEdit = true;
             editId = intent.getStringExtra(EXTRA_BOLLETTA_ID);
+            editCreatedAt = intent.getLongExtra(EXTRA_BOLLETTA_CREATED_AT, System.currentTimeMillis());
             toolbar.setTitle(R.string.modifica_bolletta);
 
             editAmount.setText(String.valueOf(intent.getDoubleExtra(EXTRA_BOLLETTA_AMOUNT, 0)));
@@ -170,8 +173,11 @@ public class AddBollettaActivity extends AppCompatActivity {
         if (isEdit) {
             Bolletta bolletta = new Bolletta(purchaseTypeId, amount, month, year);
             bolletta.setId(editId);
+            bolletta.setCreatedAt(editCreatedAt);
+            bolletta.setUpdatedAt(System.currentTimeMillis());
             executor.execute(() -> {
                 bollettaDao.update(bolletta);
+                MqttSyncManager.getInstance(AddBollettaActivity.this).publishBolletta(bolletta);
                 runOnUiThread(() -> {
                     setResult(RESULT_OK);
                     finish();
@@ -181,6 +187,7 @@ public class AddBollettaActivity extends AppCompatActivity {
             Bolletta bolletta = new Bolletta(purchaseTypeId, amount, month, year);
             executor.execute(() -> {
                 bollettaDao.insert(bolletta);
+                MqttSyncManager.getInstance(AddBollettaActivity.this).publishBolletta(bolletta);
                 runOnUiThread(() -> {
                     setResult(RESULT_OK);
                     finish();

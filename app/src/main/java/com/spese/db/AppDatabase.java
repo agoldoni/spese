@@ -9,7 +9,7 @@ import androidx.room.RoomDatabase;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
-@Database(entities = {Bolletta.class, PurchaseType.class}, version = 3, exportSchema = false)
+@Database(entities = {Bolletta.class, PurchaseType.class}, version = 4, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     private static volatile AppDatabase instance;
@@ -74,6 +74,14 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
+    static final Migration MIGRATION_3_4 = new Migration(3, 4) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE bollette ADD COLUMN updatedAt INTEGER NOT NULL DEFAULT 0");
+            database.execSQL("ALTER TABLE purchase_types ADD COLUMN updatedAt INTEGER NOT NULL DEFAULT 0");
+        }
+    };
+
     public static AppDatabase getInstance(Context context) {
         if (instance == null) {
             synchronized (AppDatabase.class) {
@@ -83,7 +91,7 @@ public abstract class AppDatabase extends RoomDatabase {
                             AppDatabase.class,
                             "spese.db"
                     )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                     .build();
                 }
             }

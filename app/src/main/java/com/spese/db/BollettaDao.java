@@ -20,6 +20,9 @@ public interface BollettaDao {
     @Delete
     void delete(Bolletta bolletta);
 
+    @Query("SELECT * FROM bollette WHERE id = :id")
+    Bolletta getById(String id);
+
     @Query("SELECT * FROM bollette ORDER BY createdAt DESC")
     List<Bolletta> getAll();
 
