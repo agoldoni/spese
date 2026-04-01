@@ -13,6 +13,16 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/action_esporta"
+        android:title="@string/action_esporta"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_importa"
+        android:title="@string/action_importa"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_condivisione"
         android:title="@string/action_condivisione"
         app:showAsAction="never" />

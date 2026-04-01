@@ -75,6 +75,16 @@
     <string name="mqtt_ricevuta_tipologia">Sync: ricevuta tipologia</string>
     <string name="mqtt_eliminato_remoto">Sync: eliminato elemento remoto</string>
 
+    <!-- Esportazione/Importazione -->
+    <string name="action_esporta">Esporta dati</string>
+    <string name="action_importa">Importa dati</string>
+    <string name="condividi_bollette">Condividi bollette</string>
+    <string name="nessuna_bolletta_da_esportare">Nessuna bolletta da esportare</string>
+    <string name="errore_esportazione">Errore durante l\'esportazione</string>
+    <string name="errore_importazione">Errore durante l\'importazione</string>
+    <string name="file_non_valido">File non valido: formato CSV non riconosciuto</string>
+    <string name="importazione_completata">Importazione completata: %1$d importate, %2$d duplicate, %3$d errori</string>
+
     <!-- Mesi -->
     <string-array name="mesi">
         <item>Gennaio</item>

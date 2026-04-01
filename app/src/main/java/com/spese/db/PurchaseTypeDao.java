@@ -28,4 +28,7 @@ public interface PurchaseTypeDao {
 
     @Query("SELECT COUNT(*) FROM bollette WHERE purchaseTypeId = :purchaseTypeId")
     int countBolletteByPurchaseType(String purchaseTypeId);
+
+    @Query("SELECT * FROM purchase_types WHERE name = :name LIMIT 1")
+    PurchaseType getByName(String name);
 }
