@@ -1,0 +1,4 @@
+# Versioni SDK del progetto, selezionate da build.sh tramite 'sdk env'.
+# Java 17: AGP 8.2.2 non supporta JDK piu' recenti (il lint non sa parsare "25.0.3")
+# e GraalVM rompe JdkImageTransform via jlink.
+java=17.0.9-tem

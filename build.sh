@@ -16,6 +16,51 @@ if [ ! -d "$ANDROID_SDK" ]; then
     exit 1
 fi
 
+# --- Selezione JDK tramite sdkman ---
+# Il progetto richiede Java 17: JDK piu' recenti (es. 25) rompono il lint di AGP
+# 8.2.2 (IllegalArgumentException sul parsing della versione) e GraalVM rompe
+# JdkImageTransform via jlink. La versione esatta e' fissata in .sdkmanrc.
+SDKMAN_DIR="${SDKMAN_DIR:-$HOME/.sdkman}"
+SDKMAN_INIT="$SDKMAN_DIR/bin/sdkman-init.sh"
+
+if [ -f "$SDKMAN_INIT" ]; then
+    # sdkman non e' compatibile con 'set -u': va disattivato attorno alle sue chiamate.
+    set +u
+    # shellcheck source=/dev/null
+    source "$SDKMAN_INIT"
+    # 'env install' scarica il JDK di .sdkmanrc se manca, 'env' lo attiva in questa shell.
+    if ! { sdk env install && sdk env; }; then
+        set -u
+        echo "[ERRORE] sdkman non e' riuscito a selezionare il JDK indicato in .sdkmanrc."
+        exit 1
+    fi
+    set -u
+    export JAVA_HOME
+    echo "[INFO] JDK: $JAVA_HOME"
+else
+    echo "[ATTENZIONE] sdkman non trovato in $SDKMAN_DIR: uso il JDK di sistema."
+    echo "             Installalo da https://sdkman.io per la selezione automatica."
+fi
+
+# Rete di sicurezza: senza sdkman il JDK di sistema potrebbe non essere adatto.
+# Si controlla lo stesso java che usera' gradlew, cioe' quello di JAVA_HOME se impostata.
+if [ -n "${JAVA_HOME:-}" ]; then
+    JAVA_CMD="$JAVA_HOME/bin/java"
+else
+    JAVA_CMD="java"
+fi
+JAVA_VERSION_OUTPUT="$("$JAVA_CMD" -version 2>&1)"
+JAVA_MAJOR="$(echo "$JAVA_VERSION_OUTPUT" | head -1 | sed -E 's/.*version "([0-9]+).*/\1/')"
+if [ "$JAVA_MAJOR" != "17" ]; then
+    echo "[ERRORE] JDK non compatibile: rilevata major '$JAVA_MAJOR'."
+    echo "         Il progetto richiede Java 17 (AGP 8.2.2 non supporta JDK piu' recenti)."
+    exit 1
+fi
+if echo "$JAVA_VERSION_OUTPUT" | grep -qi "graalvm"; then
+    echo "[ATTENZIONE] JDK GraalVM rilevato: il suo 'jlink' puo' far fallire"
+    echo "             JdkImageTransform. In caso di errore usa la Temurin 17 di .sdkmanrc."
+fi
+
 # Installa gradlew se non presente
 if [ ! -f "./gradlew" ]; then
     echo "[INFO] gradlew non trovato, lo scarico..."

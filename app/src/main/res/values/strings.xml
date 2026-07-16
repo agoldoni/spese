@@ -5,6 +5,10 @@
     <string name="action_purchase_types">Tipologie</string>
     <string name="info_version_format">Versione %1$s</string>
 
+    <!-- Filtro per tipologia -->
+    <string name="filtro_tipologia">Filtra per tipologia</string>
+    <string name="filtro_tutte">Tutte</string>
+
     <!-- Form bolletta -->
     <string name="aggiungi_bolletta">Aggiungi bolletta</string>
     <string name="modifica_bolletta">Modifica bolletta</string>

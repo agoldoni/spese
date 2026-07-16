@@ -23,7 +23,7 @@ public interface BollettaDao {
     @Query("SELECT * FROM bollette WHERE id = :id")
     Bolletta getById(String id);
 
-    @Query("SELECT * FROM bollette ORDER BY createdAt DESC")
+    @Query("SELECT * FROM bollette ORDER BY year DESC, month DESC, createdAt DESC")
     List<Bolletta> getAll();
 
     @Query("SELECT year, SUM(amount) AS total FROM bollette GROUP BY year ORDER BY year DESC")

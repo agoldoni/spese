@@ -1,13 +1,17 @@
 package com.spese;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -32,6 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -42,11 +47,24 @@ import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String PREFS_FILTRO = "filtro_prefs";
+    private static final String KEY_FILTRO_TIPOLOGIA = "filtro_tipologia_id";
+    private static final String FILTRO_TUTTE = "";
+
     private BollettaAdapter adapter;
     private BollettaDao bollettaDao;
     private PurchaseTypeDao purchaseTypeDao;
     private TextView textEmptyList;
+    private MaterialAutoCompleteTextView dropdownFiltro;
+    private SharedPreferences filtroPrefs;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
+
+    /** Tutte le bollette caricate (non filtrate). */
+    private final List<Bolletta> allBollette = new ArrayList<>();
+    /** Tipologie caricate, nell'ordine mostrato nel dropdown. */
+    private final List<PurchaseType> filterTypes = new ArrayList<>();
+    /** Id tipologia selezionata come filtro; FILTRO_TUTTE = nessun filtro. */
+    private String selectedTypeId = FILTRO_TUTTE;
 
     private final ActivityResultLauncher<Intent> addEditLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -79,10 +97,21 @@ public class MainActivity extends AppCompatActivity {
         bollettaDao = db.bollettaDao();
         purchaseTypeDao = db.purchaseTypeDao();
 
+        filtroPrefs = getSharedPreferences(PREFS_FILTRO, MODE_PRIVATE);
+        selectedTypeId = filtroPrefs.getString(KEY_FILTRO_TIPOLOGIA, FILTRO_TUTTE);
+
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         textEmptyList = findViewById(R.id.text_lista_vuota);
+
+        dropdownFiltro = findViewById(R.id.dropdown_filtro_tipologia);
+        dropdownFiltro.setOnItemClickListener((parent, view, pos, id) -> {
+            // pos 0 = "Tutte", le tipologie seguono nell'ordine di filterTypes
+            selectedTypeId = (pos == 0) ? FILTRO_TUTTE : filterTypes.get(pos - 1).getId();
+            filtroPrefs.edit().putString(KEY_FILTRO_TIPOLOGIA, selectedTypeId).apply();
+            applyFilter();
+        });
 
         String[] months = getResources().getStringArray(R.array.mesi);
         adapter = new BollettaAdapter(months);
@@ -117,10 +146,60 @@ public class MainActivity extends AppCompatActivity {
             List<Bolletta> bills = bollettaDao.getAll();
             runOnUiThread(() -> {
                 adapter.setPurchaseTypes(types);
-                adapter.setBollette(bills);
-                textEmptyList.setVisibility(bills.isEmpty() ? View.VISIBLE : View.GONE);
+
+                allBollette.clear();
+                allBollette.addAll(bills);
+
+                filterTypes.clear();
+                filterTypes.addAll(types);
+
+                updateFilterDropdown();
+                applyFilter();
             });
         });
+    }
+
+    /** Popola il dropdown con "Tutte" + le tipologie e ripristina la selezione salvata. */
+    private void updateFilterDropdown() {
+        List<String> labels = new ArrayList<>();
+        labels.add(getString(R.string.filtro_tutte));
+        for (PurchaseType t : filterTypes) {
+            labels.add(t.getName());
+        }
+
+        dropdownFiltro.setAdapter(new ArrayAdapter<>(
+                this, android.R.layout.simple_list_item_1, labels));
+
+        // Se la tipologia salvata non esiste più, torna a "Tutte".
+        int selectedPos = 0;
+        for (int i = 0; i < filterTypes.size(); i++) {
+            if (filterTypes.get(i).getId().equals(selectedTypeId)) {
+                selectedPos = i + 1;
+                break;
+            }
+        }
+        if (selectedPos == 0 && !FILTRO_TUTTE.equals(selectedTypeId)) {
+            selectedTypeId = FILTRO_TUTTE;
+            filtroPrefs.edit().putString(KEY_FILTRO_TIPOLOGIA, selectedTypeId).apply();
+        }
+        dropdownFiltro.setText(labels.get(selectedPos), false);
+    }
+
+    /** Applica il filtro corrente e aggiorna la lista visualizzata. */
+    private void applyFilter() {
+        List<Bolletta> filtered;
+        if (FILTRO_TUTTE.equals(selectedTypeId)) {
+            filtered = new ArrayList<>(allBollette);
+        } else {
+            filtered = new ArrayList<>();
+            for (Bolletta b : allBollette) {
+                if (selectedTypeId.equals(b.getPurchaseTypeId())) {
+                    filtered.add(b);
+                }
+            }
+        }
+        adapter.setBollette(filtered);
+        textEmptyList.setVisibility(filtered.isEmpty() ? View.VISIBLE : View.GONE);
     }
 
     private void openEdit(Bolletta bolletta) {
@@ -144,6 +223,7 @@ public class MainActivity extends AppCompatActivity {
                         bollettaDao.delete(bolletta);
                         MqttSyncManager.getInstance(MainActivity.this).publishDeleteBolletta(bolletta.getId());
                         runOnUiThread(() -> {
+                            allBollette.remove(bolletta);
                             adapter.removeItem(position);
                             textEmptyList.setVisibility(
                                     adapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
